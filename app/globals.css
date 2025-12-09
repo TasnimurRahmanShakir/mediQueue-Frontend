@@ -24,3 +24,125 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+
+  /* Container reset */
+  .react-calendar {
+    width: 100% !important;
+    border: none !important;
+    font-family: inherit !important;
+    background: white;
+  }
+
+  /* Navigation (Month Year header) */
+  .react-calendar__navigation {
+    margin-bottom: 1rem;
+    height: 44px;
+  }
+
+  .react-calendar__navigation button {
+    min-width: 44px;
+    background: none;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    /* slate-800 */
+  }
+
+  .react-calendar__navigation button:enabled:hover,
+  .react-calendar__navigation button:enabled:focus {
+    background-color: #f1f5f9;
+    border-radius: 8px;
+  }
+
+  /* Weekday names (Mon, Tue...) */
+  .react-calendar__month-view__weekdays {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #64748b;
+    /* slate-500 */
+    margin-bottom: 0.5rem;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    padding: 0.5em;
+    text-decoration: none;
+  }
+
+  /* Day tiles */
+  /* Day tiles */
+  .react-calendar__tile {
+    height: 40px;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none !important;
+    text-align: center;
+    line-height: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;
+    transition: background-color 0.2s;
+  }
+
+  /* Shared circle shape for hover, now, and active states */
+  .react-calendar__tile::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    z-index: -1;
+    transition: background-color 0.2s;
+  }
+
+  /* Hover state for days */
+  .react-calendar__tile:enabled:hover {
+    color: #0f172a;
+  }
+
+  .react-calendar__tile:enabled:hover::before {
+    background-color: #e2e8f0;
+  }
+
+  /* "Today" tile */
+  .react-calendar__tile--now {
+    font-weight: bold;
+    color: #3b82f6 !important;
+  }
+
+  .react-calendar__tile--now::before {
+    background: #eff6ff !important;
+  }
+
+  /* Selected Active Date (The blue circle) */
+  .react-calendar__tile--active {
+    color: white !important;
+  }
+
+  .react-calendar__tile--active::before {
+    background: #3b82f6 !important;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+  }
+
+  .react-calendar__tile--active:enabled:hover::before,
+  .react-calendar__tile--active:enabled:focus::before {
+    background: #2563eb !important;
+  }
+
+
+
+  /* Remove ugly focus outlines */
+  *:focus {
+    outline: none !important;
+  }
+}
