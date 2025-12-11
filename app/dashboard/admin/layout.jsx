@@ -9,15 +9,14 @@ import {
 } from "lucide-react";
 import { SidebarLink } from "@/components/dashboard/SidebarLink";
 import { Header } from "@/components/dashboard/Header";
+import { logoutAction } from "@/app/actions/auth";
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
 
   const handleLogout = () => {
     // In a real app, hit an API route to clear cookies
-    document.cookie = "session_token=; path=/; max-age=0";
-    document.cookie = "user_role=; path=/; max-age=0";
-    router.push("/login");
+     logoutAction();
   };
 
   return (

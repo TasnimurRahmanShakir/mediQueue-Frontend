@@ -11,14 +11,13 @@ import {
 } from "lucide-react";
 import { SidebarLink } from "@/components/dashboard/SidebarLink";
 import { Header } from "@/components/dashboard/Header";
+import { logoutAction } from "@/app/actions/auth";
 
 export default function ReceptionistLayout({ children }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    document.cookie = "session_token=; path=/; max-age=0";
-    document.cookie = "user_role=; path=/; max-age=0";
-    router.push("/login");
+    logoutAction();
   };
 
   return (
