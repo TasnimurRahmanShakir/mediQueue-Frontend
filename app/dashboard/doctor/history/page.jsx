@@ -1,6 +1,6 @@
 import { Search, Calendar, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import Badge from "@/components/ui/Badge";
 
 export default function DoctorHistory() {
   const history = [

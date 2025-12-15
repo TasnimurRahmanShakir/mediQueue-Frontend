@@ -3,7 +3,7 @@ import { Search, Plus, Filter, MoreHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
+import Badge from "@/components/ui/Badge";
 
 export default function PatientsPage() {
   const patients = [

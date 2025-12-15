@@ -4,8 +4,8 @@ import Calendar from "react-calendar";
 import { UserPlus, Calendar as CalendarIcon } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import "react-calendar/dist/Calendar.css"; // Import default styles
+import Badge from "@/components/ui/Badge";
+import "react-calendar/dist/Calendar.css";
 
 export default function ReceptionDashboard() {
   const [date, setDate] = useState(new Date());

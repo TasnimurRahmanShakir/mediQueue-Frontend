@@ -16,7 +16,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = () => {
     // In a real app, hit an API route to clear cookies
-     logoutAction();
+    logoutAction();
   };
 
   return (
@@ -31,14 +31,18 @@ export default function AdminLayout({ children }) {
         </div>
 
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <SidebarLink href="/admin" icon={LayoutDashboard} label="Dashboard" />
           <SidebarLink
-            href="/admin/users"
+            href="/dashboard/admin"
+            icon={LayoutDashboard}
+            label="Dashboard"
+          />
+          <SidebarLink
+            href="/dashboard/admin/users"
             icon={Users}
             label="User Management"
           />
           <SidebarLink
-            href="/admin/settings"
+            href="/dashboard/admin/settings"
             icon={Settings}
             label="Settings"
           />
