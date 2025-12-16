@@ -1,3 +1,4 @@
+//app/actions/userAction.js
 "use server";
 
 import { api } from "@/app/service/api";
@@ -21,6 +22,16 @@ export async function searchUsers(param) {
   } catch (error) {
     console.error("Failed to search users:", error);
     return [];
+  }
+}
+
+export async function getUserById(userId) {
+  try {
+    const response = await api.get(`/Auth/${userId}`);
+    return response?.result || null;
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    return null;
   }
 }
 

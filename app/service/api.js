@@ -1,7 +1,7 @@
 // utils/api.js
 import { getSession } from "../lib/session";
 
-const BASE_URL = "https://localhost:7232/api";
+export const BASE_URL = "https://localhost:7232/api";
 
 export const apiCall = async (
   endpoint,

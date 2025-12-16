@@ -7,7 +7,7 @@ import StatusBadge from "@/components/ui/Badge";
 import { getUsers, searchUsers } from "@/app/actions/userAction";
 import { useDebounce } from "@/app/hooks/useDebounce";
 import Link from "next/link";
-import {deleteUser} from "@/app/actions/userAction";
+import { deleteUser } from "@/app/actions/userAction";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -52,8 +52,6 @@ export default function UserManagementPage() {
       options: ["Active", "Offline", "Suspended"],
     },
   ];
-
-  
 
   const handleEditUser = (user) => {
     setEditingUser(user);
@@ -150,16 +148,22 @@ export default function UserManagementPage() {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex justify-end gap-2  group-hover:scale-105 transition-all">
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                      <Link
+                        href={`/dashboard/admin/users/${user.id}`}
+                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                      >
                         <Eye size={18} />
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleEditUser(user)}
                         className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
                       >
                         <Edit2 size={18} />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" onClick={() => handleDeleteUser(user.id)}>
+                      <button
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
                         <Trash2 size={18} />
                       </button>
                     </div>
