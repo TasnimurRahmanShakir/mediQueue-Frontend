@@ -1,6 +1,5 @@
 const styles = {
   Doctor: "bg-blue-50 text-blue-700 border-blue-100",
-  Nurse: "bg-purple-50 text-purple-700 border-purple-100",
   Admin: "bg-orange-50 text-orange-700 border-orange-100",
   Receptionist: "bg-teal-50 text-teal-700 border-teal-100",
   Active: "bg-green-100 text-green-700",

@@ -76,8 +76,21 @@ export async function createUser(formData) {
 
 export async function updateUser(userId, formData) {
   try {
-    // NOTE: This assumes you will create an endpoint like [HttpPut("update/{id}")]
-    const response = await api.put(`/Auth/update/${userId}`, formData);
+    const dataToSend = new FormData();
+    for (const key in formData) {
+      if (
+        formData[key] !== null &&
+        formData[key] !== undefined &&
+        key !== "doctorProfile" && // backend expects flat 'ConsultationFee', not nested
+        key !== "receptionistProfile"
+      ) {
+        dataToSend.append(key, formData[key]);
+      }
+    }
+    console.log("Data to send", dataToSend);
+   
+
+    const response = await api.put(`/Auth/edit/${userId}`, dataToSend);
 
     if (response?.result) {
       revalidatePath("/dashboard/admin/users");

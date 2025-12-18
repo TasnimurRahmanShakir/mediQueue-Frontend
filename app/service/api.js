@@ -2,6 +2,7 @@
 import { getSession } from "../lib/session";
 
 export const BASE_URL = "https://localhost:7232/api";
+export const BASE_URL2 = "https://localhost:7232";
 
 export const apiCall = async (
   endpoint,

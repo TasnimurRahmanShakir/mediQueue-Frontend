@@ -154,12 +154,12 @@ export default function UserManagementPage() {
                       >
                         <Eye size={18} />
                       </Link>
-                      <button
-                        onClick={() => handleEditUser(user)}
+                      <Link
+                        href={`/dashboard/admin/users/${user.id}?edit=true`}
                         className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
                       >
                         <Edit2 size={18} />
-                      </button>
+                      </Link>
                       <button
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                         onClick={() => handleDeleteUser(user.id)}

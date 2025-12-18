@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Mail,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import { updateUser } from "@/app/actions/userAction";
 import StatusBadge from "@/components/ui/Badge";
-import { BASE_URL } from "@/app/service/api";
+import { BASE_URL2 } from "@/app/service/api";
 
 // Helper for display fields
 const InfoField = ({
@@ -48,27 +49,31 @@ const InfoField = ({
 );
 
 export default function UserDetailsClient({ initialUser, id }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const searchParams = useSearchParams();
+  const [isEditing, setIsEditing] = useState(
+    searchParams?.get("edit") === "true"
+  );
 
-  // Initialize state directly from props (No useEffect needed)
-  // 'formData' tracks the inputs while editing
   const [formData, setFormData] = useState(initialUser);
-  // 'user' tracks the currently saved state for display
+
   const [user, setUser] = useState(initialUser);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    if (files && files.length > 0) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSave = async () => {
     try {
+      console.log("Form Data from handleSave", formData);
       const result = await updateUser(id, formData);
       if (result.success) {
-        // Update local state with returned data
-        const updatedUser = result.data || { ...user, ...formData };
-        setUser(updatedUser);
-        setFormData(updatedUser); // Sync form data with new saved state
+        setUser(result.data);
+        setFormData(result.data);
         setIsEditing(false);
       } else {
         alert("Failed to update user: " + (result.error || "Unknown error"));
@@ -143,27 +148,60 @@ export default function UserDetailsClient({ initialUser, id }) {
         {/* Left Column: Profile Card */}
         <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center">
-            <div className="w-32 h-32 rounded-full bg-slate-100 mb-4 overflow-hidden border-4 border-white shadow-md relative">
-              <img
-                src={
-                  BASE_URL + user.imageUrl ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    user.name
-                  )}&background=random`
-                }
-                alt={user.name}
-                className="w-full h-full object-cover"
-              />
-              <div
-                className={`absolute bottom-3 right-3 w-4 h-4 rounded-full border-2 border-white ${
-                  user.status === "Active" ? "bg-green-500" : "bg-slate-400"
-                }`}
-              ></div>
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full bg-slate-100 mb-4 overflow-hidden border-4 border-white shadow-md relative group">
+                <img
+                  src={
+                    formData.Image
+                      ? URL.createObjectURL(formData.Image)
+                      : BASE_URL2 + user.imageUrl ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          user.name
+                        )}&background=random`
+                  }
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+                {isEditing && (
+                  <label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                    <input
+                      type="file"
+                      name="Image"
+                      accept="image/*"
+                      onChange={handleInputChange}
+                      className="hidden"
+                    />
+                    <Edit2 className="text-white" size={24} />
+                  </label>
+                )}
+                {!isEditing && (
+                  <div
+                    className={`absolute bottom-3 right-3 w-4 h-4 rounded-full border-2 border-white ${
+                      user.status === "Active" ? "bg-green-500" : "bg-slate-400"
+                    }`}
+                  ></div>
+                )}
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-slate-900">{user.name}</h2>
-            <div className="flex gap-2 justify-center mt-2">
+            <h2 className="text-xl font-bold text-slate-900">
+              {formData.name}
+            </h2>
+            <div className="flex gap-2 justify-center mt-2 items-center">
               <StatusBadge type="role" label={user.role} />
-              <StatusBadge type="status" label={user.status} />
+              {isEditing ? (
+                <select
+                  name="status"
+                  value={formData.status || user.status}
+                  onChange={handleInputChange}
+                  className="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-semibold uppercase tracking-wider text-slate-700 outline-none"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
+              ) : (
+                <StatusBadge type="status" label={user.status} />
+              )}
             </div>
             <p className="text-slate-500 text-sm mt-4 leading-relaxed">
               {user.bio ||
@@ -220,13 +258,13 @@ export default function UserDetailsClient({ initialUser, id }) {
               <InfoField
                 label="Full Name"
                 value={formData.name}
-                name="Name"
+                name="name"
                 onChange={handleInputChange}
               />
               <InfoField
                 label="Date of Birth"
                 value={formData.dob}
-                name="Dob"
+                name="dob"
                 Icon={Calendar}
                 onChange={handleInputChange}
                 type="date"
@@ -234,7 +272,7 @@ export default function UserDetailsClient({ initialUser, id }) {
               <InfoField
                 label="Email Address"
                 value={formData.email}
-                name="Email"
+                name="email"
                 isEditing={isEditing}
                 Icon={Mail}
                 onChange={handleInputChange}
@@ -242,7 +280,7 @@ export default function UserDetailsClient({ initialUser, id }) {
               <InfoField
                 label="Phone Number"
                 value={formData.phoneNumber}
-                name="PhoneNumber"
+                name="phoneNumber"
                 isEditing={isEditing}
                 Icon={Phone}
                 onChange={handleInputChange}
@@ -251,8 +289,8 @@ export default function UserDetailsClient({ initialUser, id }) {
                 <InfoField
                   label="Home Address"
                   value={formData.address}
-                  name="Address"
-                  isEditing={isEditing}
+                  name="address"
+                  // isEditing={isEditing}
                   Icon={MapPin}
                   onChange={handleInputChange}
                 />
@@ -273,7 +311,7 @@ export default function UserDetailsClient({ initialUser, id }) {
                 label="Employee ID"
                 value={formData.id || "DR-2023-089"}
                 name="Id"
-                isEditing={isEditing}
+                // isEditing={isEditing}
                 onChange={handleInputChange}
               />
               {user.role === "Doctor" && (
@@ -294,7 +332,7 @@ export default function UserDetailsClient({ initialUser, id }) {
                       "Interventional Cardiology"
                     }
                     name="specialization"
-                    isEditing={isEditing}
+                    // isEditing={isEditing}
                     onChange={handleInputChange}
                   />
                   <InfoField
@@ -303,12 +341,13 @@ export default function UserDetailsClient({ initialUser, id }) {
                       formData.doctorProfile.licenseNumber || "MD-99887766"
                     }
                     name="license"
-                    isEditing={isEditing}
+                    // isEditing={isEditing}
                     onChange={handleInputChange}
                   />
                   <InfoField
                     label="Consultation Fee"
                     value={
+                      formData.ConsultationFee ??
                       formData.doctorProfile.consultationFee ??
                       "$150.00 / Session"
                     }
@@ -327,7 +366,11 @@ export default function UserDetailsClient({ initialUser, id }) {
                     {isEditing ? (
                       <select
                         name="ShiftTime"
-                        value={formData.ShiftTime || ""}
+                        value={
+                          formData.ShiftTime ||
+                          formData.receptionistProfile?.shiftTime ||
+                          ""
+                        }
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 text-slate-900 text-sm appearance-none"
                       >
@@ -338,7 +381,9 @@ export default function UserDetailsClient({ initialUser, id }) {
                       </select>
                     ) : (
                       <p className="text-slate-900 font-medium text-sm md:text-base">
-                        {formData.ShiftTime || "N/A"}
+                        {formData.ShiftTime ||
+                          formData.receptionistProfile?.shiftTime ||
+                          "N/A"}
                       </p>
                     )}
                   </div>
