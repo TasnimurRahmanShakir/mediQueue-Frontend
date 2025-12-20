@@ -317,43 +317,62 @@ export default function UserDetailsClient({ initialUser, id }) {
               {user.role === "Doctor" && (
                 <>
                   <InfoField
-                    label="Department"
-                    value={
-                      formData.doctorProfile.specialization + "Dept." ||
-                      "Cardiology Dept."
-                    }
-                    name="department"
-                    onChange={handleInputChange}
-                  />
-                  <InfoField
                     label="Specialization"
                     value={
-                      formData.doctorProfile.specialization ||
+                      formData.Specialization ??
+                      formData.doctorProfile?.specialization ??
                       "Interventional Cardiology"
                     }
-                    name="specialization"
-                    // isEditing={isEditing}
+                    name="Specialization"
+                    isEditing={isEditing}
                     onChange={handleInputChange}
                   />
+
                   <InfoField
                     label="Medical License #"
                     value={
-                      formData.doctorProfile.licenseNumber || "MD-99887766"
+                      formData.LicenseNumber ??
+                      formData.doctorProfile?.licenseNumber ??
+                      "MD-99887766"
                     }
-                    name="license"
-                    // isEditing={isEditing}
+                    name="LicenseNumber"
+                    isEditing={isEditing}
                     onChange={handleInputChange}
                   />
                   <InfoField
                     label="Consultation Fee"
                     value={
                       formData.ConsultationFee ??
-                      formData.doctorProfile.consultationFee ??
+                      formData.doctorProfile?.consultationFee ??
                       "$150.00 / Session"
                     }
                     name="ConsultationFee"
                     isEditing={isEditing}
                     onChange={handleInputChange}
+                  />
+                  <InfoField
+                    label="Counseling Start"
+                    value={
+                      formData.CounsilingStart ??
+                      formData.doctorProfile?.counsilingStart ??
+                      ""
+                    }
+                    name="CounsilingStart"
+                    isEditing={isEditing}
+                    onChange={handleInputChange}
+                    type="time"
+                  />
+                  <InfoField
+                    label="Counseling End"
+                    value={
+                      formData.CounsilingEnd ??
+                      formData.doctorProfile?.counsilingEnd ??
+                      ""
+                    }
+                    name="CounsilingEnd"
+                    isEditing={isEditing}
+                    onChange={handleInputChange}
+                    type="time"
                   />
                 </>
               )}

@@ -4,6 +4,7 @@ import { Calendar, Clock, MoreVertical, Filter } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
+import Link from "next/link";
 
 export default function AppointmentsPage() {
   const [activeTab, setActiveTab] = useState("All");
@@ -51,10 +52,7 @@ export default function AppointmentsPage() {
           <p className="text-sm text-gray-500">View and manage schedules.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="px-4">
-            <Calendar size={18} /> Select Date
-          </Button>
-          <Button className="px-6">Book Appointment</Button>
+          <Link href="/dashboard/receptionist/appointment/new" className="px-6">Book Appointment</Link>
         </div>
       </div>
 

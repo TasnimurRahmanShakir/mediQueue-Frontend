@@ -1,47 +1,54 @@
 "use client";
 import React, { useState } from "react";
 import Calendar from "react-calendar";
-import { UserPlus, Calendar as CalendarIcon } from "lucide-react";
+import { UserPlus, Calendar as CalendarIcon, Search, Edit } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import "react-calendar/dist/Calendar.css";
+import Link from "next/link";
 
 export default function ReceptionDashboard() {
   const [date, setDate] = useState(new Date());
 
   const appointments = [
     {
+      id: "1",
       time: "09:00 AM",
       name: "Liam Johnson",
       doctor: "Dr. Emily Carter",
       status: "Waiting",
     },
     {
+      id: "2",
       time: "09:30 AM",
       name: "Olivia Smith",
       doctor: "Dr. Ben Adams",
       status: "Completed",
     },
     {
+      id: "3",
       time: "10:00 AM",
       name: "Noah Williams",
       doctor: "Dr. Emily Carter",
       status: "Waiting",
     },
     {
+      id: "4",
       time: "10:30 AM",
       name: "Emma Brown",
       doctor: "Dr. Sarah Day",
       status: "Waiting",
     },
     {
+      id: "5",
       time: "11:00 AM",
       name: "James Davis",
       doctor: "Dr. Ben Adams",
       status: "In Progress",
     },
     {
+      id: "6",
       time: "11:30 AM",
       name: "Sophia Miller",
       doctor: "Dr. Sarah Day",
@@ -77,15 +84,17 @@ export default function ReceptionDashboard() {
             Quick Actions
           </h3>
           <div className="space-y-3">
-            <Button className="h-12 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-3 text-sm font-medium">
-              <UserPlus size={18} /> Register New Patient
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 border-gray-200 hover:border-blue-500 hover:text-blue-500 text-gray-700 flex items-center justify-center gap-3 text-sm font-medium"
+            <Link
+              href="/dashboard/receptionist/appointment/new"
+              className="w-full"
             >
-              <CalendarIcon size={18} /> Book Appointment
-            </Button>
+              <Button
+                variant="outline"
+                className="h-12 w-full border-gray-200 hover:border-blue-500 hover:text-blue-500 text-gray-700 flex items-center justify-center gap-3 text-sm font-medium"
+              >
+                <CalendarIcon size={18} /> Book Appointment
+              </Button>
+            </Link>
           </div>
         </Card>
       </div>
@@ -94,10 +103,25 @@ export default function ReceptionDashboard() {
       <div className="xl:col-span-2">
         <Card className="h-full border-none shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-slate-800">
-              Today's Appointments
-            </h2>
-            <span className="text-sm text-gray-500">{date.toDateString()}</span>
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-bold text-slate-800">
+                Today's Appointments
+              </h2>
+              <span className="text-sm text-gray-500">
+                {date.toDateString()}
+              </span>
+            </div>
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Search appointments..."
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 w-64"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -116,6 +140,9 @@ export default function ReceptionDashboard() {
                   <th className="py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">
                     Status
                   </th>
+                  <th className="py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider text-right">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -133,6 +160,14 @@ export default function ReceptionDashboard() {
                     <td className="py-4 text-sm text-gray-500">{apt.doctor}</td>
                     <td className="py-4">
                       <Badge status={apt.status} />
+                    </td>
+                    <td className="py-4 text-right">
+                      <Link
+                        href={`/dashboard/receptionist/appointment/${apt.id}`}
+                        className="inline-flex items-center justify-center p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit size={16} />
+                      </Link>
                     </td>
                   </tr>
                 ))}

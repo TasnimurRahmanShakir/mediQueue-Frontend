@@ -36,25 +36,25 @@ export default function ReceptionistLayout({ children }) {
 
         <nav className="flex-1 px-4 space-y-2 mt-6">
           <SidebarLink
-            href="/receptionist"
+            href="/dashboard/receptionist"
             icon={LayoutDashboard}
             label="Dashboard"
             baseColor="bg-blue-600"
           />
           <SidebarLink
-            href="/receptionist/patients"
+            href="/dashboard/receptionist/patients"
             icon={Users}
             label="Patients"
             baseColor="bg-blue-600"
           />
           <SidebarLink
-            href="/receptionist/appointments"
+            href="/dashboard/receptionist/appointments"
             icon={Calendar}
             label="Appointments"
             baseColor="bg-blue-600"
           />
           <SidebarLink
-            href="/receptionist/billing"
+            href="/dashboard/receptionist/billing"
             icon={FileText}
             label="Billing"
             baseColor="bg-blue-600"
