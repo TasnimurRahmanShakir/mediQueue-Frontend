@@ -1,36 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Search, UserPlus, Calendar as CalendarIcon, Info } from "lucide-react";
 import {
-  Search,
-  UserPlus,
-  Calendar as CalendarIcon,
-  Clock,
-  User,
-  Info,
-} from "lucide-react";
-import { searchUsers } from "@/app/actions/userAction";
-import { searchSpecializations } from "@/app/actions/appointmentAction";
+  searchSpecializations,
+  getDoctorAvailableSlots,
+} from "@/app/actions/appointmentAction";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useDebouncedCallback } from "@/app/hooks/useDebounce";
-
-const TIME_SLOTS = [
-  "09:00 AM",
-  "09:30 AM",
-  "10:00 AM",
-  "10:30 AM",
-  "11:00 AM",
-  "11:30 AM",
-  "02:00 PM",
-  "02:30 PM",
-  "03:00 PM",
-  "03:30 PM",
-  "04:00 PM",
-  "04:30 PM",
-];
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -40,29 +20,29 @@ export default function AppointmentBookingClient({
   const router = useRouter();
   const [patientMode, setPatientMode] = useState("search"); // 'search' | 'register'
 
-  // Patient Search State
+  // --- Search State ---
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  // Specialization Search State
+  // --- Specialization State ---
   const [specQuery, setSpecQuery] = useState("");
   const [specResults, setSpecResults] = useState([]);
   const [isSpecSearching, setIsSpecSearching] = useState(false);
   const [showSpecSuggestions, setShowSpecSuggestions] = useState(false);
 
+  // --- Data State ---
   const [availableDoctors, setAvailableDoctors] = useState(initialDoctors);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-  // Form State
+  // --- Form State ---
   const [formData, setFormData] = useState({
-    // New Patient Fields
     Name: "",
     PhoneNumber: "",
     BloodGroup: "",
     DOB: "",
-
-    // Appointment Fields
     DoctorId: "",
     Specialization: "",
     AppointmentDate: "",
@@ -70,8 +50,11 @@ export default function AppointmentBookingClient({
     Reason: "",
   });
 
-  // Handle Patient Search
-  const debouncedSearch = useDebouncedCallback(async (query) => {
+  // =========================================================
+  // 1. DEBOUNCED SEARCH LOGIC
+  // =========================================================
+
+  const performPatientSearch = useDebouncedCallback(async (query) => {
     if (query.length > 2) {
       setIsSearching(true);
       const results = await searchUsers(query);
@@ -82,16 +65,7 @@ export default function AppointmentBookingClient({
     }
   }, 500);
 
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (patientMode === "register") return;
-    debouncedSearch(query);
-  };
-
-  // Handle Specialization Search
-  const debouncedSpecSearch = useDebouncedCallback(async (query) => {
+  const performSpecSearch = useDebouncedCallback(async (query) => {
     if (query.length > 0) {
       setIsSpecSearching(true);
       const results = await searchSpecializations(query);
@@ -104,30 +78,15 @@ export default function AppointmentBookingClient({
     }
   }, 300);
 
-  const handleSpecChange = (e) => {
-    const value = e.target.value;
-    setSpecQuery(value);
-    setFormData((prev) => ({ ...prev, Specialization: value, DoctorId: "" }));
-    debouncedSpecSearch(value);
-  };
+  // =========================================================
+  // 2. HANDLERS
+  // =========================================================
 
-  const selectSpecialization = async (spec) => {
-    setSpecQuery(spec);
-    setFormData((prev) => ({ ...prev, Specialization: spec }));
-    setShowSpecSuggestions(false);
-
-    // Fetch doctors for this specialization
-    const res = await getDoctorsByDepartment(spec);
-    if (res.success) {
-      setAvailableDoctors(res.data);
-    } else {
-      setAvailableDoctors([]);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (patientMode === "register") return;
+    performPatientSearch(query);
   };
 
   const selectPatient = (patient) => {
@@ -139,27 +98,81 @@ export default function AppointmentBookingClient({
   const toggleRegisterMode = () => {
     if (patientMode === "search") {
       setPatientMode("register");
-      setSelectedPatient(null); // Clear selected patient
-      setSearchQuery(""); // Clear search
+      setSelectedPatient(null);
+      setSearchQuery("");
       setSearchResults([]);
     } else {
       setPatientMode("search");
-      // Clear registration fields? Optional.
     }
   };
 
-  const convertTime12to24 = (time12h) => {
-    const [time, modifier] = time12h.split(" ");
-    let [hours, minutes] = time.split(":");
-    if (hours === "12") {
-      hours = "00";
-    }
-    if (modifier === "PM") {
-      hours = parseInt(hours, 10) + 12;
-    }
-    return `${hours}:${minutes}:00`;
+  const handleSpecChange = (e) => {
+    const value = e.target.value;
+    setSpecQuery(value);
+
+    // Reset doctor if specialization changes
+    setFormData((prev) => ({ ...prev, Specialization: value, DoctorId: "" }));
+    setAvailableDoctors([]); // Clear doctors until valid selection
+
+    performSpecSearch(value);
   };
 
+  const selectSpecialization = (deptObject) => {
+    // 1. Set the Input Text
+    setSpecQuery(deptObject.departmentName);
+
+    // 2. Update Form Data
+    setFormData((prev) => ({
+      ...prev,
+      Specialization: deptObject.departmentName,
+      DoctorId: "",
+    }));
+
+    // 3. Populate Doctors
+    setAvailableDoctors(deptObject.doctors || []);
+
+    // 4. Hide Suggestions
+    setShowSpecSuggestions(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Reset slot selection if critical fields change
+    if (name === "DoctorId" || name === "AppointmentDate") {
+      setFormData((prev) => ({ ...prev, [name]: value, AppointmentTime: "" }));
+    }
+  };
+
+  // =========================================================
+  // 3. EFFECT: FETCH SLOTS
+  // =========================================================
+  useEffect(() => {
+    if (formData.DoctorId && formData.AppointmentDate) {
+      const fetchSlots = async () => {
+        setIsLoadingSlots(true);
+        setAvailableSlots([]);
+
+        const res = await getDoctorAvailableSlots(
+          formData.DoctorId,
+          formData.AppointmentDate
+        );
+        if (res.success) {
+          setAvailableSlots(res.data);
+        } else {
+          setAvailableSlots([]);
+        }
+        setIsLoadingSlots(false);
+      };
+
+      fetchSlots();
+    }
+  }, [formData.DoctorId, formData.AppointmentDate]);
+
+  // =========================================================
+  // 4. SUBMIT
+  // =========================================================
   const handleSubmit = async () => {
     if (
       !formData.DoctorId ||
@@ -171,7 +184,7 @@ export default function AppointmentBookingClient({
     }
 
     if (patientMode === "register") {
-      if (!formData.Name || !formData.PhoneNumber || !formData.DOB) {
+      if (!formData.Name || !formData.PhoneNumber) {
         alert("Please fill in all required patient details.");
         return;
       }
@@ -180,13 +193,11 @@ export default function AppointmentBookingClient({
       return;
     }
 
-    // Construct payload explicitly to avoid sending unnecessary fields (like Department)
     let payload = {
       DoctorId: formData.DoctorId,
-      AppointmentDate: formData.AppointmentDate,
-      AppointmentTime: convertTime12to24(formData.AppointmentTime),
+      Date: formData.AppointmentDate,
+      Time: formData.AppointmentTime,
       Reason: formData.Reason,
-      Status: "pending",
     };
 
     if (patientMode === "register") {
@@ -195,16 +206,11 @@ export default function AppointmentBookingClient({
         Name: formData.Name,
         PhoneNumber: formData.PhoneNumber,
         BloodGroup: formData.BloodGroup,
-        DOB: formData.DOB ? new Date(formData.DOB).toISOString() : null,
+        DOB: formData.DOB,
       };
     } else {
-      payload = {
-        ...payload,
-        PatientId: selectedPatient.id,
-      };
+      payload.PatientId = selectedPatient.id;
     }
-
-    console.log("Submitting Payload:", payload);
 
     const result = await createAppointment(payload);
     if (result.success) {
@@ -215,8 +221,12 @@ export default function AppointmentBookingClient({
     }
   };
 
+  // =========================================================
+  // 5. RENDER
+  // =========================================================
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-6">
+      {/* --- HEADER --- */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Book Appointment</h1>
         <Link
@@ -228,18 +238,19 @@ export default function AppointmentBookingClient({
       </div>
 
       <div className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        {/* Patient Information Section */}
+        {/* --- PATIENT SECTION --- */}
         <section className="space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
             Patient Information
           </h2>
 
+          {/* Restored Blue Info Box */}
           <div className="bg-blue-50 text-blue-700 p-4 rounded-xl text-sm flex gap-3 items-start">
             <Info size={18} className="mt-0.5 shrink-0" />
             <p>Search for an existing patient or register a new one.</p>
           </div>
 
-          {/* Search Section */}
+          {/* Search Input Section */}
           <div
             className={`space-y-4 transition-opacity duration-300 ${
               patientMode === "register"
@@ -276,6 +287,7 @@ export default function AppointmentBookingClient({
                   disabled={patientMode === "register"}
                   icon={Search}
                   className="disabled:bg-slate-50"
+                  autoComplete="off"
                 />
                 {/* Search Results Dropdown */}
                 {searchQuery.length > 2 && patientMode === "search" && (
@@ -310,7 +322,7 @@ export default function AppointmentBookingClient({
             )}
           </div>
 
-          {/* Registration Toggle Button */}
+          {/* Restored Register Toggle Button */}
           <div className="flex items-center gap-4">
             <div className="h-px bg-slate-100 flex-1"></div>
             <button
@@ -383,7 +395,7 @@ export default function AppointmentBookingClient({
           </div>
         </section>
 
-        {/* Appointment Details Section */}
+        {/* --- APPOINTMENT SECTION --- */}
         <section className="space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
             Appointment Details
@@ -396,7 +408,7 @@ export default function AppointmentBookingClient({
                 name="Specialization"
                 value={specQuery}
                 onChange={handleSpecChange}
-                placeholder="Type to search specialization..."
+                placeholder="Type to search Department..."
                 className="w-full"
                 autoComplete="off"
                 onFocus={() => {
@@ -404,6 +416,7 @@ export default function AppointmentBookingClient({
                     setShowSpecSuggestions(true);
                 }}
               />
+              {/* Specialization Search Results */}
               {showSpecSuggestions &&
                 (specResults.length > 0 || isSpecSearching) && (
                   <div className="absolute top-[calc(100%-8px)] left-0 right-0 bg-white rounded-b-xl shadow-lg border border-slate-100 z-20 max-h-60 overflow-y-auto">
@@ -412,13 +425,16 @@ export default function AppointmentBookingClient({
                         Searching...
                       </div>
                     ) : (
-                      specResults.map((spec, index) => (
+                      specResults.map((dept, index) => (
                         <button
                           key={index}
-                          onClick={() => selectSpecialization(spec)}
-                          className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700"
+                          onClick={() => selectSpecialization(dept)}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700 flex justify-between items-center"
                         >
-                          {spec}
+                          <span>{dept.departmentName}</span>
+                          <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                            {dept.doctors.length} Doctors
+                          </span>
                         </button>
                       ))
                     )}
@@ -433,11 +449,15 @@ export default function AppointmentBookingClient({
               onChange={handleInputChange}
               options={availableDoctors.map((doc) => ({
                 value: doc.id,
-                label: `${doc.name} - ${doc.specialization || "General"}`,
+                label: `${doc.name}`,
               }))}
-              placeholder="Select a doctor"
+              placeholder={
+                availableDoctors.length === 0
+                  ? "Select Dept first"
+                  : "Select a doctor"
+              }
+              disabled={availableDoctors.length === 0}
             />
-
             <Input
               label="Date"
               name="AppointmentDate"
@@ -456,30 +476,65 @@ export default function AppointmentBookingClient({
             />
           </div>
 
+          {/* Time Slots */}
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-              Available Time Slots
-            </label>
+            <div className="flex items-center gap-2 mb-3">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Available Time Slots
+              </label>
+              {isLoadingSlots && (
+                <span className="text-xs text-blue-500 animate-pulse">
+                  (Loading...)
+                </span>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {TIME_SLOTS.map((time) => (
-                <button
-                  key={time}
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, AppointmentTime: time }))
-                  }
-                  className={`py-2 px-1 rounded-lg text-xs font-medium border transition ${
-                    formData.AppointmentTime === time
-                      ? "bg-blue-50 border-blue-200 text-blue-600 ring-2 ring-blue-100"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {time}
-                </button>
-              ))}
+              {!formData.AppointmentDate || !formData.DoctorId ? (
+                <div className="col-span-full text-sm text-slate-400 italic p-2 border border-dashed border-slate-200 rounded-lg text-center">
+                  Select Doctor & Date to view slots.
+                </div>
+              ) : availableSlots.length === 0 && !isLoadingSlots ? (
+                <div className="col-span-full text-sm text-red-400 italic p-2 border border-dashed border-red-100 bg-red-50 rounded-lg text-center">
+                  No slots available.
+                </div>
+              ) : (
+                availableSlots.map((slot, index) => {
+                  const isSelected = formData.AppointmentTime === slot.time;
+                  return (
+                    <button
+                      key={index}
+                      disabled={slot.isBooked}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          AppointmentTime: slot.time,
+                        }))
+                      }
+                      className={`
+                        py-2 px-1 rounded-lg text-xs font-medium border transition relative
+                        ${
+                          slot.isBooked
+                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed decoration-slate-300"
+                            : isSelected
+                            ? "bg-blue-50 border-blue-200 text-blue-600 ring-2 ring-blue-100"
+                            : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-slate-50"
+                        }
+                      `}
+                    >
+                      {slot.formattedTime}
+                      {isSelected && !slot.isBooked && (
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                      )}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>
 
+        {/* --- FOOTER ACTIONS --- */}
         <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
           <Link
             href="/dashboard/receptionist"

@@ -41,28 +41,31 @@ export async function getDoctorsByDepartment(department) {
 
 export async function searchSpecializations(query) {
   try {
-    const response = await api.get("/Auth");
-    if (response?.result) {
-      // Extract all specializations from doctors
-      const allSpecializations = response.result
-        .filter(
-          (user) => user.role === "Doctor" && user.doctorProfile?.specialization
-        )
-        .map((user) => user.doctorProfile.specialization);
+    const response = await api.get(`/Doctor/departments/${query}`);
 
-      // Get unique values
-      const uniqueSpecializations = [...new Set(allSpecializations)];
-
-      // Filter by query
-      const filtered = uniqueSpecializations.filter((spec) =>
-        spec.toLowerCase().includes(query.toLowerCase())
-      );
-
-      return { success: true, data: filtered };
+    if (response?.result && Array.isArray(response.result)) {
+      return { success: true, data: response.result };
     }
+
     return { success: false, data: [] };
   } catch (error) {
     console.error("Search Specializations Error:", error);
-    return { success: false, error: "Failed to search specializations" };
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+export async function getDoctorAvailableSlots(doctorId, date) {
+  try {
+    const response = await api.get(
+      `/Appointment/slots?doctorId=${doctorId}&date=${date}`
+    );
+
+    if (response?.result) {
+      return { success: true, data: response.result };
+    }
+    return { success: false, data: [] };
+  } catch (error) {
+    console.error("Get Slots Error:", error);
+    return { success: false, error: "Failed to fetch slots" };
   }
 }
