@@ -31,7 +31,7 @@ export const apiCall = async (
     }
   }
   console.log("Actual Body Payload:", JSON.stringify(body, null, 2));
-  console.log("Fetch Config:", JSON.stringify(config, null, 2));
+  // console.log("Fetch Config:", JSON.stringify(config, null, 2));
 
   try {
     const response = await fetch(url, config);

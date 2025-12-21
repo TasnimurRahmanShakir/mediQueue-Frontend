@@ -63,3 +63,30 @@ export async function searchPatient(param) {
     return { success: false, data: [], error: error.message };
   }
 }
+
+export async function getAppointmentsByDate(date) {
+  try {
+    const response = await api.get(`/Appointment/by-date?date=${date}`);
+    if (response?.result) {
+      return { success: true, data: response.result };
+    }
+    return { success: false, data: [] };
+  } catch (error) {
+    console.error("Get Appointments Error:", error);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+export async function cancelAppointment(appointmentId) {
+  try {
+    const response = await api.put(`/Appointment/cancel/${appointmentId}`);
+    if (response?.result) {
+      revalidatePath("/dashboard/receptionist");
+      return { success: true };
+    }
+    return { success: false, error: response?.message || "Failed to cancel" };
+  } catch (error) {
+    console.error("Cancel Appointment Error:", error);
+    return { success: false, error: error.message };
+  }
+}
