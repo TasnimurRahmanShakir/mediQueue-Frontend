@@ -7,6 +7,8 @@ import { Search, UserPlus, Calendar as CalendarIcon, Info } from "lucide-react";
 import {
   searchSpecializations,
   getDoctorAvailableSlots,
+  createAppointment,
+  searchPatient
 } from "@/app/actions/appointmentAction";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -55,10 +57,10 @@ export default function AppointmentBookingClient({
   // =========================================================
 
   const performPatientSearch = useDebouncedCallback(async (query) => {
-    if (query.length > 2) {
+    if (query.length > 0) {
       setIsSearching(true);
-      const results = await searchUsers(query);
-      setSearchResults(results || []);
+      const results = await searchPatient(query);
+      setSearchResults(results.data || []);
       setIsSearching(false);
     } else {
       setSearchResults([]);
@@ -195,8 +197,8 @@ export default function AppointmentBookingClient({
 
     let payload = {
       DoctorId: formData.DoctorId,
-      Date: formData.AppointmentDate,
-      Time: formData.AppointmentTime,
+      AppointmentDate: formData.AppointmentDate,
+      AppointmentTime: formData.AppointmentTime,
       Reason: formData.Reason,
     };
 
@@ -211,7 +213,6 @@ export default function AppointmentBookingClient({
     } else {
       payload.PatientId = selectedPatient.id;
     }
-
     const result = await createAppointment(payload);
     if (result.success) {
       alert("Appointment booked successfully!");

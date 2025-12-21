@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 
 export async function createAppointment(formData) {
   try {
-    const response = await api.post("/Appointment", formData);
-    if (response?.isSuccess) {
+    const response = await api.post("/Appointment/book", formData);
+    if (response?.result) {
       revalidatePath("/dashboard/receptionist");
       return { success: true, data: response.result };
     }
@@ -17,25 +17,6 @@ export async function createAppointment(formData) {
   } catch (error) {
     console.error("Create Appointment Error:", error);
     return { success: false, error: "An error occurred while booking." };
-  }
-}
-
-export async function getDoctorsByDepartment(department) {
-  try {
-    const response = await api.get("/Auth");
-    if (response?.result) {
-      const doctors = response.result.filter(
-        (user) =>
-          user.role === "Doctor" &&
-          user.doctorProfile?.specialization?.toLowerCase() ===
-            department.toLowerCase()
-      );
-      return { success: true, data: doctors };
-    }
-    return { success: false, data: [] };
-  } catch (error) {
-    console.error("Get Doctors Error:", error);
-    return { success: false, error: "Failed to fetch doctors" };
   }
 }
 
@@ -67,5 +48,18 @@ export async function getDoctorAvailableSlots(doctorId, date) {
   } catch (error) {
     console.error("Get Slots Error:", error);
     return { success: false, error: "Failed to fetch slots" };
+  }
+}
+
+export async function searchPatient(param) {
+  try {
+    const response = await api.get(`/Patient/search/${param}`);
+    if (response?.result) {
+      return { success: true, data: response.result };
+    }
+    return { success: false, data: [] };
+  } catch (error) {
+    console.error("Search Patient Error:", error);
+    return { success: false, data: [], error: error.message };
   }
 }
