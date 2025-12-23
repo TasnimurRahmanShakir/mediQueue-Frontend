@@ -4,7 +4,6 @@ import { getUsers } from "@/app/actions/userAction";
 
 export default async function AppointmentDetailsPage({ params }) {
   const { id } = await params;
-  console.log(id);
 
   if (id === "new") {
     // Fetch doctors for the dropdown

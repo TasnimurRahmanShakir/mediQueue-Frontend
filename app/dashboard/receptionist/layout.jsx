@@ -41,18 +41,12 @@ export default function ReceptionistLayout({ children }) {
             label="Dashboard"
             baseColor="bg-blue-600"
           />
-          <SidebarLink
+          {/* <SidebarLink
             href="/dashboard/receptionist/patients"
             icon={Users}
             label="Patients"
             baseColor="bg-blue-600"
-          />
-          <SidebarLink
-            href="/dashboard/receptionist/appointments"
-            icon={Calendar}
-            label="Appointments"
-            baseColor="bg-blue-600"
-          />
+          /> */}
           <SidebarLink
             href="/dashboard/receptionist/billing"
             icon={FileText}

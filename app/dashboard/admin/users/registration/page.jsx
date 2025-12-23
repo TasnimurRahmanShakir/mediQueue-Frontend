@@ -64,6 +64,8 @@ export default function RegistrationPage() {
         formData.append("Specialization", data.Specialization);
         formData.append("LicenseNumber", data.LicenseNumber);
         formData.append("ConsultationFee", data.ConsultationFee);
+        formData.append("CounsilingStart", data.CounsilingStart);
+        formData.append("CounsilingEnd", data.CounsilingEnd);
       } else if (data.Role === "Receptionist") {
         formData.append("ShiftTime", data.ShiftTime);
       }
@@ -242,6 +244,26 @@ export default function RegistrationPage() {
                     register={register}
                     error={errors.consultationFee}
                     validation={{ required: "Consultation Fee is required" }}
+                  />
+                  <FormInput
+                    label="Counseling Start Time"
+                    name="CounsilingStart"
+                    type="time"
+                    icon={Clock}
+                    register={register}
+                    error={errors.counsilingStart}
+                    validation={{
+                      required: "Counseling Start Time is required",
+                    }}
+                  />
+                  <FormInput
+                    label="Counseling End Time"
+                    name="CounsilingEnd"
+                    type="time"
+                    icon={Clock}
+                    register={register}
+                    error={errors.counsilingEnd}
+                    validation={{ required: "Counseling End Time is required" }}
                   />
                 </div>
               )}

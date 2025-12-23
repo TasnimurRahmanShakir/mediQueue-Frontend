@@ -50,9 +50,6 @@ export default function PatientsPage() {
             Manage patient data and history.
           </p>
         </div>
-        <Button className="w-full md:w-auto px-6">
-          <Plus size={18} /> Register Patient
-        </Button>
       </div>
 
       <Card className="p-0 overflow-hidden">
