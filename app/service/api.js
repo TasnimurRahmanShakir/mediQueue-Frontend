@@ -1,5 +1,5 @@
 // utils/api.js
-import { getSession } from "../lib/session";
+import { getSession } from "@/app/lib/session"; 
 
 export const BASE_URL = "https://localhost:7232/api";
 export const BASE_URL2 = "https://localhost:7232";
@@ -10,9 +10,16 @@ export const apiCall = async (
 ) => {
   let url = `${BASE_URL}${endpoint}`;
 
+  if (params) {
+    const queryString = new URLSearchParams(params).toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
+
   const session = await getSession();
   const token = session?.token;
-  // 2. Configure Headers
+
   const config = {
     method,
     headers: {
@@ -20,9 +27,8 @@ export const apiCall = async (
       ...headers,
     },
   };
- 
+
   if (body instanceof FormData) {
-    // Let browser set Content-Type for FormData
     config.body = body;
   } else {
     config.headers["Content-Type"] = "application/json";
@@ -30,11 +36,11 @@ export const apiCall = async (
       config.body = JSON.stringify(body);
     }
   }
-  console.log("Actual Body Payload:", JSON.stringify(body, null, 2));
-  // console.log("Fetch Config:", JSON.stringify(config, null, 2));
+
 
   try {
     const response = await fetch(url, config);
+
     if (!response.ok) {
       const contentType = response.headers.get("content-type");
       let errorMessage = "Unable to fetch data";
@@ -45,13 +51,10 @@ export const apiCall = async (
       } else {
         errorMessage = await response.text();
       }
-
       return { error: errorMessage };
     }
 
     const data = await response.json();
-    console.log("data" + data);
-
     return data;
   } catch (error) {
     console.error("API Call Failed:", error.message);
@@ -59,14 +62,16 @@ export const apiCall = async (
   }
 };
 
-// --- Convenience Methods (Optional) ---
-
 export const api = {
-  get: (endpoint, params, headers) =>
-    apiCall(endpoint, { method: "GET", params, headers }),
-  post: (endpoint, body, headers) =>
-    apiCall(endpoint, { method: "POST", body, headers }),
-  put: (endpoint, body, headers) =>
-    apiCall(endpoint, { method: "PUT", body, headers }),
-  del: (endpoint, headers) => apiCall(endpoint, { method: "DELETE", headers }),
+  get: (endpoint, options = {}) =>
+    apiCall(endpoint, { method: "GET", ...options }),
+
+  post: (endpoint, body, options = {}) =>
+    apiCall(endpoint, { method: "POST", body, ...options }),
+
+  put: (endpoint, body, options = {}) =>
+    apiCall(endpoint, { method: "PUT", body, ...options }),
+
+  del: (endpoint, options = {}) =>
+    apiCall(endpoint, { method: "DELETE", ...options }),
 };

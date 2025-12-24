@@ -27,13 +27,13 @@ export default function DoctorLayout({ children }) {
 
         <nav className="flex-1 p-4 space-y-2">
           <SidebarLink
-            href="/doctor"
+            href="dashboard/doctor"
             icon={Stethoscope}
             label="Active Visits"
             baseColor="bg-blue-600"
           />
           <SidebarLink
-            href="/doctor/history"
+            href="dashboard/doctor/history"
             icon={Clock}
             label="Visit History"
             baseColor="bg-blue-600"
