@@ -23,7 +23,7 @@ export async function getDoctorAppointments(filterType) {
     
 
     if (response?.result) {
-      return { success: true, data: response.result };
+      return { success: true, data: response.result};
     }
 
     return {

@@ -28,7 +28,7 @@ export default function ReceptionistLayout({ children }) {
           <ShieldCheck className="text-blue-500" size={32} />
           <div>
             <h1 className="font-bold text-lg leading-tight">
-              Clinic Management
+              Clinic OS
             </h1>
             <p className="text-xs text-slate-400">Receptionist</p>
           </div>
